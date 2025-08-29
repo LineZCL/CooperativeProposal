@@ -1,5 +1,6 @@
 package com.miyazaki.cooperativeproposals.rabbitmq.consumer;
 
+import com.miyazaki.cooperativeproposals.exception.NotFoundException;
 import com.miyazaki.cooperativeproposals.filter.RequestTraceFilter;
 import com.miyazaki.cooperativeproposals.rabbitmq.config.RabbitMQConfig;
 import com.miyazaki.cooperativeproposals.rabbitmq.message.SessionMessage;
@@ -21,13 +22,19 @@ public class SessionConsumer {
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_CLOSE, containerFactory = "listenerFactory")
     public void onMessage(SessionMessage payload,
-                          @Header(name = RequestTraceFilter.TRACE_KEY, required = false) String traceId) {
+                          @Header(name = RequestTraceFilter.TRACE_KEY, required = false) String traceId,
+                          @Header(name = "x-death", required = false) Object xDeath) {
         if (traceId == null || traceId.isBlank()) traceId = "amqp-" + UUID.randomUUID();
         MDC.put(RequestTraceFilter.TRACE_KEY, traceId);
+        
         try {
-            log.info("Closing the session. SessionId: {}", payload.votingSessionId());
+            log.info("Processing session closure  for SessionId: {}", payload.votingSessionId());
             votingSessionService.closeSession(payload);
-            log.info("Closed session {}", payload.votingSessionId());
+            log.info("Successfully closed session {}", payload.votingSessionId());
+        } catch (NotFoundException e) {
+            log.error("Session not found for closure. SessionId: {}. Message will be retried.",
+                    payload.votingSessionId(), e);
+            throw e;
         } finally {
             MDC.remove(RequestTraceFilter.TRACE_KEY);
         }

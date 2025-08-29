@@ -6,21 +6,21 @@ import org.springframework.amqp.core.CustomExchange;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
-import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
+@Slf4j
 public class RabbitMQConfig {
     public static final String EXCHANGE_DELAYED = "session.delayed";
     public static final String ROUTE_KEY_CLOSE  = "session.close";
@@ -75,14 +75,18 @@ public class RabbitMQConfig {
         f.setMessageConverter(conv);
 
         f.setDefaultRequeueRejected(false);
+        
         f.setAdviceChain(
                 RetryInterceptorBuilder.stateless()
-                        .maxAttempts(4)
-                        .maxAttempts(4)
-                        .backOffOptions(1000, 2.0, 10000) // 1s -> 2s -> 4s
+                        .maxAttempts(4) 
+                        .backOffOptions(1000, 2.0, 10000)
                         .recoverer(new RejectAndDontRequeueRecoverer())
                         .build()
         );
+        
+        f.setConcurrentConsumers(1);
+        f.setMaxConcurrentConsumers(1);
+        
         return f;
     }
 
