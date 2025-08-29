@@ -3,6 +3,8 @@ package com.miyazaki.cooperativeproposals.service;
 import com.miyazaki.cooperativeproposals.domain.entity.Proposal;
 import com.miyazaki.cooperativeproposals.domain.entity.VotingSession;
 import com.miyazaki.cooperativeproposals.domain.enums.SessionStatus;
+import com.miyazaki.cooperativeproposals.exception.NotFoundException;
+import com.miyazaki.cooperativeproposals.rabbitmq.message.SessionMessage;
 import com.miyazaki.cooperativeproposals.rabbitmq.producer.SessionProducer;
 import com.miyazaki.cooperativeproposals.domain.repository.VotingSessionRepository;
 import org.junit.jupiter.api.Test;
@@ -19,6 +21,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -194,5 +197,49 @@ class VotingSessionServiceTest {
         votingSessionService.schedulerSessionClosure(sessionId, duration);
 
         verify(sessionProducer, times(1)).schedulerSessionClosure(eq(sessionId), eq(expectedDelayMs));
+    }
+
+    @Test
+    void closeSession_ShouldSetStatusToClosed_WhenSessionIsFound(){
+        final var sessionId = UUID.randomUUID();
+        final var message = new SessionMessage(sessionId);
+        final VotingSession savedSession = VotingSession.builder()
+                .id(sessionId)
+                .status(SessionStatus.OPENED)
+                .build();
+
+        when(votingSessionRepository.findById(eq(sessionId))).thenReturn(Optional.of(savedSession));
+
+        votingSessionService.closeSession(message);
+
+        final ArgumentCaptor<VotingSession> sessionCaptor = ArgumentCaptor.forClass(VotingSession.class);
+        verify(votingSessionRepository, times(1)).save(sessionCaptor.capture());
+
+        final VotingSession capturedSession = sessionCaptor.getValue();
+        assertEquals(SessionStatus.CLOSED, capturedSession.getStatus());
+    }
+
+    @Test
+    void closeSession_ShouldThrowNotFoundException_WhenSessionNotFound(){
+        final var sessionId = UUID.randomUUID();
+        final var message = new SessionMessage(sessionId);
+
+        when(votingSessionRepository.findById(eq(sessionId))).thenReturn(Optional.empty());
+
+        final NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+            votingSessionService.closeSession(message);
+        });
+
+        assertEquals("Voting session not found!", exception.getMessage());
+    }
+
+    @Test
+    void closeSession_ShouldThrowNotFoundException_WhenSessionMessageIsNull(){
+
+        final NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+            votingSessionService.closeSession(null);
+        });
+
+        assertEquals("Voting session not found!", exception.getMessage());
     }
 }
