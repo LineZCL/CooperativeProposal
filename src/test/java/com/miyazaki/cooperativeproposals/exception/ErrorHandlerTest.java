@@ -62,4 +62,54 @@ class ErrorHandlerTest {
         assertEquals("Parâmetros inválidos", response.getBody().getMessage());
         assertEquals("description: size must be between 1 and 500; title: must not be blank", response.getBody().getDetails());
     }
+
+    @Test
+    void notFoundHandler_ShouldReturnNotFound_WhenNotFoundExceptionThrown() {
+        final String errorMessage = "Proposal not found!";
+        final NotFoundException notFoundException = new NotFoundException(errorMessage);
+
+        final ResponseEntity<DefaultErrorResponse> response = errorHandler.notFoundHandler(notFoundException);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(errorMessage, response.getBody().getMessage());
+        assertNull(response.getBody().getDetails());
+    }
+
+    @Test
+    void notFoundHandler_ShouldReturnNotFoundWithNullMessage_WhenNotFoundExceptionHasNullMessage() {
+        final NotFoundException notFoundException = new NotFoundException(null);
+        final ResponseEntity<DefaultErrorResponse> response = errorHandler.notFoundHandler(notFoundException);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertNull(response.getBody().getMessage());
+        assertNull(response.getBody().getDetails());
+    }
+
+    @Test
+    void sessionOpenedHandler_ShouldReturnConflict_WhenSessionOpenedExceptionThrown() {
+        final String errorMessage = "Session voting to proposal already opened";
+        final SessionOpenedException sessionOpenedException = new SessionOpenedException(errorMessage);
+
+        final ResponseEntity<DefaultErrorResponse> response = errorHandler.sessionOpenedHandler(sessionOpenedException);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(errorMessage, response.getBody().getMessage());
+        assertNull(response.getBody().getDetails());
+    }
+
+    @Test
+    void sessionOpenedHandler_ShouldReturnConflictWithNullMessage_WhenSessionOpenedExceptionHasNullMessage() {
+        final SessionOpenedException sessionOpenedException = new SessionOpenedException(null);
+        final ResponseEntity<DefaultErrorResponse> response = errorHandler.sessionOpenedHandler(sessionOpenedException);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertNull(response.getBody().getMessage());
+        assertNull(response.getBody().getDetails());
+    }
+
+
 }

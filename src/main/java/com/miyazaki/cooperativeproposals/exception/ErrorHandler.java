@@ -1,14 +1,11 @@
 package com.miyazaki.cooperativeproposals.exception;
 
 import com.miyazaki.cooperativeproposals.controller.dto.response.DefaultErrorResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class ErrorHandler {
@@ -25,5 +22,17 @@ public class ErrorHandler {
                 .details(details)
                 .build();
         return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<DefaultErrorResponse> notFoundHandler(NotFoundException ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(DefaultErrorResponse.builder().message(ex.getMessage()).build());
+    }
+
+    @ExceptionHandler(SessionOpenedException.class)
+    public ResponseEntity<DefaultErrorResponse> sessionOpenedHandler(SessionOpenedException ex){
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(DefaultErrorResponse.builder().message(ex.getMessage()).build());
     }
 }
