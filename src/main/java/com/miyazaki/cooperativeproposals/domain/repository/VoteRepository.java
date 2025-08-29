@@ -1,6 +1,6 @@
-package com.miyazaki.cooperativeproposals.repository;
+package com.miyazaki.cooperativeproposals.domain.repository;
 
-import com.miyazaki.cooperativeproposals.entity.Vote;
+import com.miyazaki.cooperativeproposals.domain.entity.Vote;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;

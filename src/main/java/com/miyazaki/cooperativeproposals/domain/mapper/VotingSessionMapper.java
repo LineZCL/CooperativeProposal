@@ -1,9 +1,8 @@
-package com.miyazaki.cooperativeproposals.mapper;
+package com.miyazaki.cooperativeproposals.domain.mapper;
 
 import com.miyazaki.cooperativeproposals.controller.dto.response.SessionResponse;
-import com.miyazaki.cooperativeproposals.entity.VotingSession;
+import com.miyazaki.cooperativeproposals.domain.entity.VotingSession;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface VotingSessionMapper {

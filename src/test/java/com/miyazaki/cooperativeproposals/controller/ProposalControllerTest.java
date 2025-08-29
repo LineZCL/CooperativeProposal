@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.miyazaki.cooperativeproposals.controller.dto.request.CreateProposalRequest;
 import com.miyazaki.cooperativeproposals.controller.dto.request.OpenSessionRequest;
 import com.miyazaki.cooperativeproposals.controller.dto.response.SessionResponse;
-import com.miyazaki.cooperativeproposals.enums.SessionStatus;
+import com.miyazaki.cooperativeproposals.domain.enums.SessionStatus;
 import com.miyazaki.cooperativeproposals.exception.NotFoundException;
 import com.miyazaki.cooperativeproposals.exception.SessionOpenedException;
 import com.miyazaki.cooperativeproposals.service.ProposalService;

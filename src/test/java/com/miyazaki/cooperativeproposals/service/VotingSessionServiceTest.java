@@ -1,10 +1,10 @@
 package com.miyazaki.cooperativeproposals.service;
 
-import com.miyazaki.cooperativeproposals.entity.Proposal;
-import com.miyazaki.cooperativeproposals.entity.VotingSession;
-import com.miyazaki.cooperativeproposals.enums.SessionStatus;
+import com.miyazaki.cooperativeproposals.domain.entity.Proposal;
+import com.miyazaki.cooperativeproposals.domain.entity.VotingSession;
+import com.miyazaki.cooperativeproposals.domain.enums.SessionStatus;
 import com.miyazaki.cooperativeproposals.rabbitmq.producer.SessionProducer;
-import com.miyazaki.cooperativeproposals.repository.VotingSessionRepository;
+import com.miyazaki.cooperativeproposals.domain.repository.VotingSessionRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

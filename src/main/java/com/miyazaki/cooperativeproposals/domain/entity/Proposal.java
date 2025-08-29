@@ -1,4 +1,4 @@
-package com.miyazaki.cooperativeproposals.entity;
+package com.miyazaki.cooperativeproposals.domain.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

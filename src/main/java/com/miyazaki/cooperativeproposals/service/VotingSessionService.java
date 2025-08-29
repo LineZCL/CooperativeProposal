@@ -1,11 +1,13 @@
 package com.miyazaki.cooperativeproposals.service;
 
-import com.miyazaki.cooperativeproposals.controller.dto.request.OpenSessionRequest;
-import com.miyazaki.cooperativeproposals.entity.Proposal;
-import com.miyazaki.cooperativeproposals.entity.VotingSession;
-import com.miyazaki.cooperativeproposals.enums.SessionStatus;
+import com.miyazaki.cooperativeproposals.domain.entity.Proposal;
+import com.miyazaki.cooperativeproposals.domain.entity.VotingSession;
+import com.miyazaki.cooperativeproposals.domain.enums.SessionStatus;
+import com.miyazaki.cooperativeproposals.exception.NotFoundException;
+import com.miyazaki.cooperativeproposals.rabbitmq.message.SessionMessage;
 import com.miyazaki.cooperativeproposals.rabbitmq.producer.SessionProducer;
-import com.miyazaki.cooperativeproposals.repository.VotingSessionRepository;
+import com.miyazaki.cooperativeproposals.domain.repository.VotingSessionRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -40,5 +42,20 @@ public class VotingSessionService {
 
     public void schedulerSessionClosure(UUID sessionId, Long duration){
         sessionProducer.schedulerSessionClosure(sessionId, duration * 1000L);
+    }
+
+    @Transactional
+    public VotingSession closeSession(final SessionMessage sessionMessage){
+        final var session = getSession(sessionMessage.votingSessionId());
+        session.setStatus(SessionStatus.CLOSED);
+        return votingSessionRepository.save(session);
+    }
+
+    public VotingSession getSession(UUID votingSessionId){
+        final var sessionOpt = votingSessionRepository.findById(votingSessionId);
+        if(sessionOpt.isEmpty()){
+            throw new NotFoundException("Voting session not found!");
+        }
+        return sessionOpt.get();
     }
 }

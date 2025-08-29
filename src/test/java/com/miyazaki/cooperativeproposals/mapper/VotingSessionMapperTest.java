@@ -1,8 +1,9 @@
 package com.miyazaki.cooperativeproposals.mapper;
 
 import com.miyazaki.cooperativeproposals.controller.dto.response.SessionResponse;
-import com.miyazaki.cooperativeproposals.entity.VotingSession;
-import com.miyazaki.cooperativeproposals.enums.SessionStatus;
+import com.miyazaki.cooperativeproposals.domain.entity.VotingSession;
+import com.miyazaki.cooperativeproposals.domain.enums.SessionStatus;
+import com.miyazaki.cooperativeproposals.domain.mapper.VotingSessionMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

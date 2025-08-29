@@ -1,7 +1,8 @@
 package com.miyazaki.cooperativeproposals.mapper;
 
 import com.miyazaki.cooperativeproposals.controller.dto.request.CreateProposalRequest;
-import com.miyazaki.cooperativeproposals.entity.Proposal;
+import com.miyazaki.cooperativeproposals.domain.entity.Proposal;
+import com.miyazaki.cooperativeproposals.domain.mapper.ProposalMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

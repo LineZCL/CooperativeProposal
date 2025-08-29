@@ -2,7 +2,7 @@ package com.miyazaki.cooperativeproposals.controller.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.miyazaki.cooperativeproposals.enums.SessionStatus;
+import com.miyazaki.cooperativeproposals.domain.enums.SessionStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
