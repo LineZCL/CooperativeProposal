@@ -20,5 +20,12 @@ spring:
 springdoc:
   swagger-ui:
     path: /docs
+logging:
+  level:
+    com.miyazaki.cooperativeproposals: DEBUG
+    org.springframework.web: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [trace=%X{requestTraceId:-N/A}] %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [trace=%X{requestTraceId:-N/A}] %logger{36} - %msg%n"
 
 

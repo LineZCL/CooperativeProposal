@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +24,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
+@Slf4j
 @RequestMapping("/proposal")
 @Tag(name = "Proposal")
 public class ProposalController {
@@ -35,7 +37,9 @@ public class ProposalController {
     })
     @PostMapping
     public ResponseEntity<Void> create(@Valid @RequestBody final CreateProposalRequest createProposalRequest){
+        log.info("Create a proposal. Title: {}", createProposalRequest.title());
         proposalService.create(createProposalRequest);
+        log.info("Proposal has been created. Title: {}", createProposalRequest.title());
         return ResponseEntity.noContent().build();
     }
 
@@ -50,8 +54,11 @@ public class ProposalController {
     public ResponseEntity<?> openSession(
             @PathVariable UUID proposalId,
             @Valid @RequestBody(required = false) OpenSessionRequest req) {
+            log.info("Opening voting session for proposal: {}, duration: {}", 
+                    proposalId, req != null ? req.durationSeconds() : "default");
             SessionResponse resp = proposalService.openVotingSession(proposalId, req);
+            log.info("Voting session opened successfully for proposal: {}, sessionId: {}", 
+                    proposalId, resp.getId());
             return ResponseEntity.ok(resp);
-
     }
 }

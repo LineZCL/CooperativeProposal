@@ -37,14 +37,24 @@ public class ProposalService {
 
     @Transactional
     public SessionResponse openVotingSession(UUID proposalId, OpenSessionRequest request) throws NotFoundException, SessionOpenedException {
+        log.info("Starting voting session opening process for proposal: {}", proposalId);
+        
         final var proposal = getProposal(proposalId);
+        log.info("Proposal found: {}", proposal.getTitle());
+        
         if(votingSessionService.hasVotingSessionOpened(proposalId)){
+            log.warn("Attempted to open session for proposal {} but session already exists", proposalId);
             throw new SessionOpenedException("Session voting to proposal already opened");
         }
 
         final Integer duration = Objects.nonNull(request) && Objects.nonNull(request.durationSeconds()) ? request.durationSeconds() : DEFAULT_DURATION;
+
         final var session = votingSessionService.create(proposal, duration);
+        log.info("Session created with ID: {} for proposal: {}", session.getId(), proposalId);
+        
         votingSessionService.schedulerSessionClosure(session.getId(), Long.valueOf(duration));
+        log.info("Session closure scheduled for session: {} in {} seconds", session.getId(), duration);
+        
         return votingSessionMapper.toSessionResponse(session);
     }
 
