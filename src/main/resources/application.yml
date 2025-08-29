@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: CooperativeProposals
+  datasource:
+    url: ${POSTGRES_DB:jdbc:postgresql://localhost:5432/cooperative_proposals}
+    username: ${POSTGRES_USER:coop}
+    password: ${POSTGRES_PASSWORD:coop}
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+
