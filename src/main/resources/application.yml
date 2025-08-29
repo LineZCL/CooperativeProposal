@@ -1,3 +1,7 @@
+server:
+  port: ${APP_PORT:8080}
+  servlet:
+    context-path: /api/v1
 spring:
   application:
     name: CooperativeProposals
@@ -8,5 +12,8 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+springdoc:
+  swagger-ui:
+    path: /docs
 
 
