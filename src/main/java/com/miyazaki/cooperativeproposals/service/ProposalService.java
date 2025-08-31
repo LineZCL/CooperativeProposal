@@ -2,6 +2,9 @@ package com.miyazaki.cooperativeproposals.service;
 
 import com.miyazaki.cooperativeproposals.controller.dto.request.CreateProposalRequest;
 import com.miyazaki.cooperativeproposals.controller.dto.request.OpenSessionRequest;
+import com.miyazaki.cooperativeproposals.controller.dto.response.PagedResponse;
+import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalStatusEnum;
+import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalSummary;
 import com.miyazaki.cooperativeproposals.controller.dto.response.SessionResponse;
 import com.miyazaki.cooperativeproposals.domain.entity.Proposal;
 import com.miyazaki.cooperativeproposals.exception.NotFoundException;
@@ -12,6 +15,8 @@ import com.miyazaki.cooperativeproposals.domain.repository.ProposalRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -65,5 +70,46 @@ public class ProposalService {
         return proposalOptional.get();
     }
 
+    public PagedResponse<ProposalSummary> getAllProposals(Pageable pageable) {
+        log.info("Retrieving proposals with pagination - page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+        
+        final Page<Proposal> proposalPage = proposalRepository.findAll(pageable);
+        
+        final var proposalSummaries = proposalPage.getContent().stream()
+                .map(this::mapToProposalSummary)
+                .toList();
+        
+        log.info("Retrieved {} proposals out of {} total", proposalSummaries.size(), proposalPage.getTotalElements());
+        
+        return PagedResponse.<ProposalSummary>builder()
+                .content(proposalSummaries)
+                .page(proposalPage.getNumber())
+                .size(proposalPage.getSize())
+                .totalElements(proposalPage.getTotalElements())
+                .totalPages(proposalPage.getTotalPages())
+                .build();
+    }
+
+    private ProposalSummary mapToProposalSummary(Proposal proposal) {
+        final ProposalStatusEnum status = determineProposalStatus(proposal);
+        
+        return ProposalSummary.builder()
+                .id(proposal.getId())
+                .title(proposal.getTitle())
+                .description(proposal.getDescription())
+                .status(status)
+                .build();
+    }
+
+    private ProposalStatusEnum determineProposalStatus(Proposal proposal) {
+        if (proposal.getVotingSession() == null) {
+            return ProposalStatusEnum.WAITING;
+        }
+        
+        return switch (proposal.getVotingSession().getStatus()) {
+            case OPENED -> ProposalStatusEnum.OPENED;
+            case CLOSED -> ProposalStatusEnum.CLOSED;
+        };
+    }
 
 }

@@ -2,6 +2,9 @@ package com.miyazaki.cooperativeproposals.service;
 
 import com.miyazaki.cooperativeproposals.controller.dto.request.CreateProposalRequest;
 import com.miyazaki.cooperativeproposals.controller.dto.request.OpenSessionRequest;
+import com.miyazaki.cooperativeproposals.controller.dto.response.PagedResponse;
+import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalStatusEnum;
+import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalSummary;
 import com.miyazaki.cooperativeproposals.controller.dto.response.SessionResponse;
 import com.miyazaki.cooperativeproposals.domain.entity.Proposal;
 import com.miyazaki.cooperativeproposals.domain.entity.VotingSession;
@@ -16,14 +19,23 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -269,6 +281,125 @@ class ProposalServiceTest {
 
         assertEquals("Proposal not found!", exception.getMessage());
         verify(proposalRepository, times(1)).findById(null);
+    }
+
+    @Test
+    void getAllProposals_ShouldReturnPagedResponse_WhenProposalsExist() {
+        final Pageable pageable = PageRequest.of(0, 10, Sort.by("title"));
+        final List<Proposal> proposals = Arrays.asList(
+                createProposalWithoutSession(UUID.randomUUID(), "Proposal 1", "Description 1"),
+                createProposalWithOpenSession(UUID.randomUUID(), "Proposal 2", "Description 2"),
+                createProposalWithClosedSession(UUID.randomUUID(), "Proposal 3", "Description 3")
+        );
+        final Page<Proposal> proposalPage = new PageImpl<>(proposals, pageable, 3);
+
+        when(proposalRepository.findAll(pageable)).thenReturn(proposalPage);
+
+        final PagedResponse<ProposalSummary> result = proposalService.getAllProposals(pageable);
+
+        assertNotNull(result);
+        assertEquals(3, result.getContent().size());
+        assertEquals(0, result.getPage());
+        assertEquals(10, result.getSize());
+        assertEquals(3, result.getTotalElements());
+        assertEquals(1, result.getTotalPages());
+
+        final ProposalSummary summary1 = result.getContent().get(0);
+        assertEquals("Proposal 1", summary1.getTitle());
+        assertEquals(ProposalStatusEnum.WAITING, summary1.getStatus());
+
+        final ProposalSummary summary2 = result.getContent().get(1);
+        assertEquals("Proposal 2", summary2.getTitle());
+        assertEquals(ProposalStatusEnum.OPENED, summary2.getStatus());
+
+        final ProposalSummary summary3 = result.getContent().get(2);
+        assertEquals("Proposal 3", summary3.getTitle());
+        assertEquals(ProposalStatusEnum.CLOSED, summary3.getStatus());
+
+        verify(proposalRepository, times(1)).findAll(pageable);
+    }
+
+    @Test
+    void getAllProposals_ShouldReturnEmptyPagedResponse_WhenNoProposalsExist() {
+        final Pageable pageable = PageRequest.of(0, 10);
+        final Page<Proposal> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+
+        when(proposalRepository.findAll(pageable)).thenReturn(emptyPage);
+
+        final PagedResponse<ProposalSummary> result = proposalService.getAllProposals(pageable);
+
+        assertNotNull(result);
+        assertTrue(result.getContent().isEmpty());
+        assertEquals(0, result.getPage());
+        assertEquals(10, result.getSize());
+        assertEquals(0, result.getTotalElements());
+        assertEquals(0, result.getTotalPages());
+
+        verify(proposalRepository, times(1)).findAll(pageable);
+    }
+
+    @Test
+    void getAllProposals_ShouldReturnCorrectPageInfo_WhenRequestingSecondPage() {
+        final Pageable pageable = PageRequest.of(1, 2);
+        final List<Proposal> proposals = Arrays.asList(
+                createProposalWithoutSession(UUID.randomUUID(), "Proposal 3", "Description 3"),
+                createProposalWithoutSession(UUID.randomUUID(), "Proposal 4", "Description 4")
+        );
+        final Page<Proposal> proposalPage = new PageImpl<>(proposals, pageable, 5);
+
+        when(proposalRepository.findAll(pageable)).thenReturn(proposalPage);
+
+        final PagedResponse<ProposalSummary> result = proposalService.getAllProposals(pageable);
+
+        assertNotNull(result);
+        assertEquals(2, result.getContent().size());
+        assertEquals(1, result.getPage());
+        assertEquals(2, result.getSize());
+        assertEquals(5, result.getTotalElements());
+        assertEquals(3, result.getTotalPages());
+
+        verify(proposalRepository, times(1)).findAll(pageable);
+    }
+
+    private Proposal createProposalWithoutSession(UUID id, String title, String description) {
+        return Proposal.builder()
+                .id(id)
+                .title(title)
+                .description(description)
+                .votingSession(null)
+                .build();
+    }
+
+    private Proposal createProposalWithOpenSession(UUID id, String title, String description) {
+        final VotingSession session = VotingSession.builder()
+                .id(UUID.randomUUID())
+                .status(SessionStatus.OPENED)
+                .openedAt(LocalDateTime.now())
+                .closesAt(LocalDateTime.now().plusMinutes(60))
+                .build();
+
+        return Proposal.builder()
+                .id(id)
+                .title(title)
+                .description(description)
+                .votingSession(session)
+                .build();
+    }
+
+    private Proposal createProposalWithClosedSession(UUID id, String title, String description) {
+        final VotingSession session = VotingSession.builder()
+                .id(UUID.randomUUID())
+                .status(SessionStatus.CLOSED)
+                .openedAt(LocalDateTime.now().minusHours(1))
+                .closesAt(LocalDateTime.now().minusMinutes(30))
+                .build();
+
+        return Proposal.builder()
+                .id(id)
+                .title(title)
+                .description(description)
+                .votingSession(session)
+                .build();
     }
 
 }

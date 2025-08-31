@@ -3,6 +3,9 @@ package com.miyazaki.cooperativeproposals.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.miyazaki.cooperativeproposals.controller.dto.request.CreateProposalRequest;
 import com.miyazaki.cooperativeproposals.controller.dto.request.OpenSessionRequest;
+import com.miyazaki.cooperativeproposals.controller.dto.response.PagedResponse;
+import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalStatusEnum;
+import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalSummary;
 import com.miyazaki.cooperativeproposals.controller.dto.response.SessionResponse;
 import com.miyazaki.cooperativeproposals.domain.enums.SessionStatus;
 import com.miyazaki.cooperativeproposals.exception.NotFoundException;
@@ -16,14 +19,20 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -300,5 +309,98 @@ class ProposalControllerTest {
                 .andExpect(status().isBadRequest());
 
         verify(proposalService, never()).openVotingSession(any(UUID.class), any(OpenSessionRequest.class));
+    }
+
+    @Test
+    void getAllProposals_ShouldReturnOk_WhenDefaultParametersUsed() throws Exception {
+        final PagedResponse<ProposalSummary> mockResponse = createMockPagedResponse();
+        final Pageable expectedPageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "title"));
+
+        when(proposalService.getAllProposals(expectedPageable)).thenReturn(mockResponse);
+
+        mockMvc.perform(get("/proposal"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[0].title").value("Proposal 1"))
+                .andExpect(jsonPath("$.content[0].status").value("WAITING"))
+                .andExpect(jsonPath("$.content[1].title").value("Proposal 2"))
+                .andExpect(jsonPath("$.content[1].status").value("OPENED"))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(10))
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.totalPages").value(1));
+
+        verify(proposalService, times(1)).getAllProposals(expectedPageable);
+    }
+
+    @Test
+    void getAllProposals_ShouldReturnOk_WhenCustomParametersProvided() throws Exception {
+        final PagedResponse<ProposalSummary> mockResponse = createMockPagedResponse();
+        final Pageable expectedPageable = PageRequest.of(1, 5, Sort.by(Sort.Direction.DESC, "description"));
+
+        when(proposalService.getAllProposals(expectedPageable)).thenReturn(mockResponse);
+
+        mockMvc.perform(get("/proposal")
+                        .param("page", "1")
+                        .param("size", "5")
+                        .param("sortBy", "description")
+                        .param("sortDirection", "desc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(10));
+
+        verify(proposalService, times(1)).getAllProposals(expectedPageable);
+    }
+
+    @Test
+    void getAllProposals_ShouldReturnOk_WhenEmptyResultReturned() throws Exception {
+        // Arrange
+        final PagedResponse<ProposalSummary> emptyResponse = PagedResponse.<ProposalSummary>builder()
+                .content(Collections.emptyList())
+                .page(0)
+                .size(10)
+                .totalElements(0)
+                .totalPages(0)
+                .build();
+
+        final Pageable expectedPageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "title"));
+
+        when(proposalService.getAllProposals(expectedPageable)).thenReturn(emptyResponse);
+
+        // Act & Assert
+        mockMvc.perform(get("/proposal"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(0))
+                .andExpect(jsonPath("$.totalElements").value(0))
+                .andExpect(jsonPath("$.totalPages").value(0));
+
+        verify(proposalService, times(1)).getAllProposals(expectedPageable);
+    }
+
+    private PagedResponse<ProposalSummary> createMockPagedResponse() {
+        final ProposalSummary summary1 = ProposalSummary.builder()
+                .id(UUID.randomUUID())
+                .title("Proposal 1")
+                .description("Description 1")
+                .status(ProposalStatusEnum.WAITING)
+                .build();
+
+        final ProposalSummary summary2 = ProposalSummary.builder()
+                .id(UUID.randomUUID())
+                .title("Proposal 2")
+                .description("Description 2")
+                .status(ProposalStatusEnum.OPENED)
+                .build();
+
+        return PagedResponse.<ProposalSummary>builder()
+                .content(Arrays.asList(summary1, summary2))
+                .page(0)
+                .size(10)
+                .totalElements(2)
+                .totalPages(1)
+                .build();
     }
 }

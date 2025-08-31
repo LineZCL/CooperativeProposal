@@ -1,5 +1,6 @@
 package com.miyazaki.cooperativeproposals.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.miyazaki.cooperativeproposals.domain.enums.SessionStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,6 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
@@ -27,6 +29,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 @Table(name = "voting_session")
+@ToString(exclude = "proposal") // Prevent toString loops
 public class VotingSession {
     @Id
     @GeneratedValue
@@ -35,6 +38,7 @@ public class VotingSession {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "proposal_id", nullable = false)
+    @JsonBackReference
     private Proposal proposal;
 
     @Column(name = "opened_at")
