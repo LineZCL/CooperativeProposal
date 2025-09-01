@@ -3,6 +3,8 @@ package com.miyazaki.cooperativeproposals.service;
 import com.miyazaki.cooperativeproposals.controller.dto.request.CreateProposalRequest;
 import com.miyazaki.cooperativeproposals.controller.dto.request.OpenSessionRequest;
 import com.miyazaki.cooperativeproposals.controller.dto.response.PagedResponse;
+import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalDetailsResponse;
+import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalResultResponse;
 import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalStatusEnum;
 import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalSummary;
 import com.miyazaki.cooperativeproposals.controller.dto.response.SessionResponse;
@@ -14,6 +16,8 @@ import com.miyazaki.cooperativeproposals.exception.SessionOpenedException;
 import com.miyazaki.cooperativeproposals.domain.mapper.ProposalMapper;
 import com.miyazaki.cooperativeproposals.domain.mapper.VotingSessionMapper;
 import com.miyazaki.cooperativeproposals.domain.repository.ProposalRepository;
+import com.miyazaki.cooperativeproposals.domain.repository.VoteRepository;
+import com.miyazaki.cooperativeproposals.domain.repository.projection.VoteSummaryProjection;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -53,6 +57,9 @@ class ProposalServiceTest {
 
     @Mock
     private ProposalMapper proposalMapper;
+
+    @Mock
+    private VoteService voteService;
 
     @InjectMocks
     private ProposalService proposalService;
@@ -400,6 +407,113 @@ class ProposalServiceTest {
                 .description(description)
                 .votingSession(session)
                 .build();
+    }
+
+    @Test
+    void getProposalDetail_ShouldReturnDetailsWithoutResult_WhenProposalStatusIsWaiting() {
+        final UUID proposalId = UUID.randomUUID();
+        final Proposal proposal = createProposalWithoutSession(proposalId, "Test Proposal", "Test Description");
+        final ProposalDetailsResponse expectedResponse = ProposalDetailsResponse.builder()
+                .proposalId(proposalId)
+                .title("Test Proposal")
+                .description("Test Description")
+                .status(ProposalStatusEnum.WAITING)
+                .result(null)
+                .build();
+
+        when(proposalRepository.findById(proposalId)).thenReturn(Optional.of(proposal));
+        when(proposalMapper.toProposalDetailsResponse(proposal, ProposalStatusEnum.WAITING)).thenReturn(expectedResponse);
+
+        final ProposalDetailsResponse result = proposalService.getProposalDetail(proposalId);
+
+        assertNotNull(result);
+        assertEquals(proposalId, result.getProposalId());
+        assertEquals("Test Proposal", result.getTitle());
+        assertEquals("Test Description", result.getDescription());
+        assertEquals(ProposalStatusEnum.WAITING, result.getStatus());
+        assertEquals(null, result.getResult());
+
+        verify(proposalRepository, times(1)).findById(proposalId);
+        verify(proposalMapper, times(1)).toProposalDetailsResponse(proposal, ProposalStatusEnum.WAITING);
+    }
+
+    @Test
+    void getProposalDetail_ShouldReturnDetailsWithoutResult_WhenProposalStatusIsOpened() {
+        final UUID proposalId = UUID.randomUUID();
+        final Proposal proposal = createProposalWithOpenSession(proposalId, "Open Proposal", "Open Description");
+        final ProposalDetailsResponse expectedResponse = ProposalDetailsResponse.builder()
+                .proposalId(proposalId)
+                .title("Open Proposal")
+                .description("Open Description")
+                .status(ProposalStatusEnum.OPENED)
+                .result(null)
+                .build();
+
+        when(proposalRepository.findById(proposalId)).thenReturn(Optional.of(proposal));
+        when(proposalMapper.toProposalDetailsResponse(proposal, ProposalStatusEnum.OPENED)).thenReturn(expectedResponse);
+
+        final ProposalDetailsResponse result = proposalService.getProposalDetail(proposalId);
+
+        assertNotNull(result);
+        assertEquals(proposalId, result.getProposalId());
+        assertEquals("Open Proposal", result.getTitle());
+        assertEquals("Open Description", result.getDescription());
+        assertEquals(ProposalStatusEnum.OPENED, result.getStatus());
+        assertEquals(null, result.getResult());
+
+        verify(proposalRepository, times(1)).findById(proposalId);
+        verify(proposalMapper, times(1)).toProposalDetailsResponse(proposal, ProposalStatusEnum.OPENED);
+    }
+
+    @Test
+    void getProposalDetail_ShouldReturnDetailsWithResult_WhenProposalStatusIsClosed() {
+        // Given
+        final UUID proposalId = UUID.randomUUID();
+        final Proposal proposal = createProposalWithClosedSession(proposalId, "Closed Proposal", "Closed Description");
+        final ProposalDetailsResponse expectedResponse = ProposalDetailsResponse.builder()
+                .proposalId(proposalId)
+                .title("Closed Proposal")
+                .description("Closed Description")
+                .status(ProposalStatusEnum.CLOSED)
+                .result(null) // Will be set by the service
+                .build();
+
+        final ProposalResultResponse result = ProposalResultResponse.builder()
+                .countYes(5)
+                .countNo(3)
+                .totalVotes(8)
+                .build();
+
+        when(proposalRepository.findById(proposalId)).thenReturn(Optional.of(proposal));
+        when(proposalMapper.toProposalDetailsResponse(proposal, ProposalStatusEnum.CLOSED)).thenReturn(expectedResponse);
+        when(voteService.getVoteResult(proposalId)).thenReturn(result);
+
+        final ProposalDetailsResponse details  = proposalService.getProposalDetail(proposalId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(proposalId, details.getProposalId());
+        assertEquals("Closed Proposal", details.getTitle());
+        assertEquals("Closed Description", details.getDescription());
+        assertEquals(ProposalStatusEnum.CLOSED, details.getStatus());
+        assertNotNull(details.getResult());
+        assertEquals(5, details.getResult().getCountYes());
+        assertEquals(3, details.getResult().getCountNo());
+        assertEquals(8, details.getResult().getTotalVotes());
+
+    }
+
+    @Test
+    void getProposalDetail_ShouldThrowNotFoundException_WhenProposalDoesNotExist() {
+        final UUID proposalId = UUID.randomUUID();
+
+        when(proposalRepository.findById(proposalId)).thenReturn(Optional.empty());
+
+        final NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+            proposalService.getProposalDetail(proposalId);
+        });
+
+        assertEquals("Proposal not found!", exception.getMessage());
     }
 
 }

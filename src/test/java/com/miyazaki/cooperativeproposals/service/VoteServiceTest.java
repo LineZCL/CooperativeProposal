@@ -1,13 +1,16 @@
 package com.miyazaki.cooperativeproposals.service;
 
 import com.miyazaki.cooperativeproposals.controller.dto.request.VoteRequest;
+import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalResultResponse;
 import com.miyazaki.cooperativeproposals.controller.dto.response.VoteResponse;
 import com.miyazaki.cooperativeproposals.domain.entity.Proposal;
 import com.miyazaki.cooperativeproposals.domain.entity.Vote;
 import com.miyazaki.cooperativeproposals.domain.entity.VotingSession;
 import com.miyazaki.cooperativeproposals.domain.enums.SessionStatus;
 import com.miyazaki.cooperativeproposals.domain.mapper.VoteMapper;
+import com.miyazaki.cooperativeproposals.domain.repository.ProposalRepository;
 import com.miyazaki.cooperativeproposals.domain.repository.VoteRepository;
+import com.miyazaki.cooperativeproposals.domain.repository.projection.VoteSummaryProjection;
 import com.miyazaki.cooperativeproposals.exception.AssociatePermissionVoteException;
 import com.miyazaki.cooperativeproposals.exception.DuplicateVoteException;
 import com.miyazaki.cooperativeproposals.exception.NotFoundException;
@@ -19,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,7 +41,7 @@ class VoteServiceTest {
     private VoteRepository voteRepository;
 
     @Mock
-    private ProposalService proposalService;
+    private ProposalRepository proposalRepository;
 
     @Mock
     private VotingSessionService votingSessionService;
@@ -47,6 +51,9 @@ class VoteServiceTest {
 
     @Mock
     private AssociateValidationService associateValidationService;
+
+    @Mock
+    private VoteSummaryProjection voteSummaryProjection;
 
     @InjectMocks
     private VoteService voteService;
@@ -103,7 +110,7 @@ class VoteServiceTest {
 
     @Test
     void castVote_ShouldReturnVoteResponse_WhenValidVoteProvided() {
-        when(proposalService.getProposal(proposalId)).thenReturn(proposal);
+        when(proposalRepository.findById(proposalId)).thenReturn(Optional.of(proposal));
         when(votingSessionService.hasVotingSessionOpened(proposalId)).thenReturn(true);
         when(votingSessionService.getSessionActiveByProposalId(proposalId)).thenReturn(votingSession);
         when(voteRepository.existsByProposalIdAndAssociateId(proposalId, associateId)).thenReturn(false);
@@ -125,11 +132,11 @@ class VoteServiceTest {
 
     @Test
     void castVote_ShouldThrowNotFoundException_WhenNoActiveVotingSession() {
-        when(proposalService.getProposal(proposalId)).thenReturn(proposal);
+        when(proposalRepository.findById(proposalId)).thenReturn(Optional.of(proposal));
         when(votingSessionService.hasVotingSessionOpened(proposalId)).thenReturn(false);
         when(associateValidationService.isValidCpf(voteRequest.associateCpf())).thenReturn(true);
 
-        NotFoundException exception = assertThrows(NotFoundException.class, 
+        NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> voteService.castVote(proposalId, voteRequest));
 
         assertEquals("No active voting session found for this proposal", exception.getMessage());
@@ -138,14 +145,27 @@ class VoteServiceTest {
     }
 
     @Test
+    void castVote_ShouldThrowNotFoundException_WhenProposalNotFound() {
+        when(associateValidationService.isValidCpf(voteRequest.associateCpf())).thenReturn(true);
+        when(proposalRepository.findById(proposalId)).thenReturn(Optional.empty());
+
+        NotFoundException exception = assertThrows(NotFoundException.class,
+                () -> voteService.castVote(proposalId, voteRequest));
+
+        assertEquals("Proposal not found!", exception.getMessage());
+
+        verify(voteRepository, never()).save(any());
+    }
+
+    @Test
     void castVote_ShouldThrowDuplicateVoteException_WhenAssociateAlreadyVoted() {
-        when(proposalService.getProposal(proposalId)).thenReturn(proposal);
+        when(proposalRepository.findById(proposalId)).thenReturn(Optional.of(proposal));
         when(votingSessionService.hasVotingSessionOpened(proposalId)).thenReturn(true);
         when(votingSessionService.getSessionActiveByProposalId(proposalId)).thenReturn(votingSession);
         when(voteRepository.existsByProposalIdAndAssociateId(proposalId, associateId)).thenReturn(true);
         when(associateValidationService.isValidCpf(voteRequest.associateCpf())).thenReturn(true);
 
-        DuplicateVoteException exception = assertThrows(DuplicateVoteException.class,
+        final DuplicateVoteException exception = assertThrows(DuplicateVoteException.class,
                 () -> voteService.castVote(proposalId, voteRequest));
 
         assertEquals("Associate has already voted on this proposal", exception.getMessage());
@@ -157,12 +177,52 @@ class VoteServiceTest {
     void castVote_ShouldThrowAssociatePermissionVoteException_WhenAssociateCPFNotValid() {
         when(associateValidationService.isValidCpf(voteRequest.associateCpf())).thenReturn(false);
 
-        AssociatePermissionVoteException exception = assertThrows(AssociatePermissionVoteException.class,
+        final AssociatePermissionVoteException exception = assertThrows(AssociatePermissionVoteException.class,
                 () -> voteService.castVote(proposalId, voteRequest));
 
         assertEquals("Associado sem permissão para voltar", exception.getMessage());
 
         verify(voteRepository, never()).save(any());
+    }
+
+    @Test
+    void getVoteResult_ShouldReturnCorrectResult_WhenVotesExist() {
+        final Integer countYes = 5;
+        final Integer countNo = 3;
+        final Integer totalVotes = 8;
+        
+        when(voteSummaryProjection.getCountYes()).thenReturn(countYes);
+        when(voteSummaryProjection.getCountNo()).thenReturn(countNo);
+        when(voteRepository.countVoteResults(proposalId)).thenReturn(voteSummaryProjection);
+
+        final ProposalResultResponse result = voteService.getVoteResult(proposalId);
+
+        assertNotNull(result);
+        assertEquals(countYes, result.getCountYes());
+        assertEquals(countNo, result.getCountNo());
+        assertEquals(totalVotes, result.getTotalVotes());
+        
+        verify(voteRepository, times(1)).countVoteResults(proposalId);
+    }
+
+    @Test
+    void getVoteResult_ShouldReturnZeroVotes_WhenNoVotesExist() {
+        final Integer countYes = 0;
+        final Integer countNo = 0;
+        final Integer totalVotes = 0;
+        
+        when(voteSummaryProjection.getCountYes()).thenReturn(countYes);
+        when(voteSummaryProjection.getCountNo()).thenReturn(countNo);
+        when(voteRepository.countVoteResults(proposalId)).thenReturn(voteSummaryProjection);
+
+        final ProposalResultResponse result = voteService.getVoteResult(proposalId);
+
+        assertNotNull(result);
+        assertEquals(countYes, result.getCountYes());
+        assertEquals(countNo, result.getCountNo());
+        assertEquals(totalVotes, result.getTotalVotes());
+        
+        verify(voteRepository, times(1)).countVoteResults(proposalId);
     }
 
 }

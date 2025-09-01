@@ -4,6 +4,7 @@ import com.miyazaki.cooperativeproposals.controller.dto.request.CreateProposalRe
 import com.miyazaki.cooperativeproposals.controller.dto.request.OpenSessionRequest;
 import com.miyazaki.cooperativeproposals.controller.dto.request.VoteRequest;
 import com.miyazaki.cooperativeproposals.controller.dto.response.PagedResponse;
+import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalDetailsResponse;
 import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalSummary;
 import com.miyazaki.cooperativeproposals.controller.dto.response.SessionResponse;
 import com.miyazaki.cooperativeproposals.controller.dto.response.VoteResponse;
@@ -113,7 +114,8 @@ public class ProposalController {
                     content = @Content(schema = @Schema(implementation = VoteResponse.class))),
             @ApiResponse(responseCode = "404", description = "Proposal not found or no active voting session"),
             @ApiResponse(responseCode = "409", description = "Associate has already voted or session is not active"),
-            @ApiResponse(responseCode = "400", description = "Invalid request parameters")
+            @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
+            @ApiResponse(responseCode = "409", description = "Associate has not permission to vote")
     })
     @PostMapping("/{proposalId}/vote")
     public ResponseEntity<VoteResponse> castVote(
@@ -130,5 +132,20 @@ public class ProposalController {
                 response.getVoteId(), proposalId, voteRequest.associateId());
         
         return ResponseEntity.status(201).body(response);
+    }
+
+    @Operation(summary = "Get proposal details with result")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Proposal details",
+            content = @Content(schema = @Schema(implementation = ProposalDetailsResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Proposal not found")
+    })
+    @GetMapping("/{proposalId}")
+    public ResponseEntity<ProposalDetailsResponse> getProposalDetail(
+            @Parameter(description = "ID of the proposal to vote on", example = "123e4567-e89b-12d3-a456-426614174000")
+            @PathVariable UUID proposalId){
+        log.info("Get proposal details for ID: {}", proposalId);
+        final var proposalDetails = proposalService.getProposalDetail(proposalId);
+        return ResponseEntity.ok(proposalDetails);
     }
 }

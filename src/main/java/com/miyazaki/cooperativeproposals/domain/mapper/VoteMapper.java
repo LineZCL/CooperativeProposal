@@ -11,4 +11,5 @@ public interface VoteMapper {
     @Mapping(target = "voteId", source = "id")
     @Mapping(target = "proposalId", source = "proposal.id")
     VoteResponse toVoteResponse(Vote vote);
+
 }

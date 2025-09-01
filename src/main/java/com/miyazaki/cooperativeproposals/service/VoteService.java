@@ -1,12 +1,15 @@
 package com.miyazaki.cooperativeproposals.service;
 
 import com.miyazaki.cooperativeproposals.controller.dto.request.VoteRequest;
+import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalResultResponse;
 import com.miyazaki.cooperativeproposals.controller.dto.response.VoteResponse;
 import com.miyazaki.cooperativeproposals.domain.entity.Proposal;
 import com.miyazaki.cooperativeproposals.domain.entity.Vote;
 import com.miyazaki.cooperativeproposals.domain.entity.VotingSession;
 import com.miyazaki.cooperativeproposals.domain.mapper.VoteMapper;
+import com.miyazaki.cooperativeproposals.domain.repository.ProposalRepository;
 import com.miyazaki.cooperativeproposals.domain.repository.VoteRepository;
+
 import com.miyazaki.cooperativeproposals.exception.AssociatePermissionVoteException;
 import com.miyazaki.cooperativeproposals.exception.DuplicateVoteException;
 import com.miyazaki.cooperativeproposals.exception.NotFoundException;
@@ -16,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -24,7 +28,7 @@ import java.util.UUID;
 public class VoteService {
     
     private final VoteRepository voteRepository;
-    private final ProposalService proposalService;
+    private final ProposalRepository proposalRepository;
     private final VotingSessionService votingSessionService;
     private final VoteMapper voteMapper;
     private final AssociateValidationService associateValidationService;
@@ -38,7 +42,7 @@ public class VoteService {
             throw new AssociatePermissionVoteException("Associado sem permissão para voltar");
         }
 
-        final Proposal proposal = proposalService.getProposal(proposalId);
+        final Proposal proposal = getProposal(proposalId);
         
         final VotingSession votingSession = getActiveVotingSession(proposalId);
         
@@ -79,6 +83,22 @@ public class VoteService {
                 .votedAt(LocalDateTime.now())
                 .build();
     }
+
+    public ProposalResultResponse getVoteResult(UUID proposalId){
+        final var result = voteRepository.countVoteResults(proposalId);
+
+        return ProposalResultResponse.builder()
+                .countYes(result.getCountYes())
+                .countNo(result.getCountNo())
+                .totalVotes(result.getCountYes() + result.getCountNo())
+                .build();
+    }
     
+    private Proposal getProposal(UUID proposalId) throws NotFoundException {
+        final Optional<Proposal> proposalOptional = proposalRepository.findById(proposalId);
+        if(proposalOptional.isEmpty())
+            throw new NotFoundException("Proposal not found!");
+        return proposalOptional.get();
+    }
 
 }

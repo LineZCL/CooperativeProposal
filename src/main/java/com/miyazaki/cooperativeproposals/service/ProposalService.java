@@ -3,6 +3,8 @@ package com.miyazaki.cooperativeproposals.service;
 import com.miyazaki.cooperativeproposals.controller.dto.request.CreateProposalRequest;
 import com.miyazaki.cooperativeproposals.controller.dto.request.OpenSessionRequest;
 import com.miyazaki.cooperativeproposals.controller.dto.response.PagedResponse;
+import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalDetailsResponse;
+import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalResultResponse;
 import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalStatusEnum;
 import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalSummary;
 import com.miyazaki.cooperativeproposals.controller.dto.response.SessionResponse;
@@ -12,6 +14,8 @@ import com.miyazaki.cooperativeproposals.exception.SessionOpenedException;
 import com.miyazaki.cooperativeproposals.domain.mapper.ProposalMapper;
 import com.miyazaki.cooperativeproposals.domain.mapper.VotingSessionMapper;
 import com.miyazaki.cooperativeproposals.domain.repository.ProposalRepository;
+import com.miyazaki.cooperativeproposals.domain.repository.VoteRepository;
+import com.miyazaki.cooperativeproposals.domain.repository.projection.VoteSummaryProjection;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +35,7 @@ public class ProposalService {
     private final VotingSessionService votingSessionService;
     private final VotingSessionMapper votingSessionMapper;
     private final ProposalMapper proposalMapper;
+    private final VoteService voteService;
     private static final Integer DEFAULT_DURATION = 60;
 
 
@@ -112,4 +117,18 @@ public class ProposalService {
         };
     }
 
+    public ProposalDetailsResponse getProposalDetail(final UUID proposalId){
+        final var proposal = getProposal(proposalId);
+        final var proposalStatus = determineProposalStatus(proposal);
+
+        final var details = proposalMapper.toProposalDetailsResponse(proposal, proposalStatus);
+
+        if(proposalStatus.equals(ProposalStatusEnum.CLOSED)){
+            final var result = voteService.getVoteResult(proposalId);
+            details.setResult(result);
+        }
+        return details;
+    }
+
+    
 }
