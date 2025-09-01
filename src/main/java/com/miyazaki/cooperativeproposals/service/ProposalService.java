@@ -130,5 +130,9 @@ public class ProposalService {
         return details;
     }
 
+    public Page<Proposal> getAllProposalsPage(Pageable pageable) {
+        log.info("Retrieving proposals page: {}", pageable);
+        return proposalRepository.findAll(pageable);
+    }
     
 }
