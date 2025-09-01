@@ -43,4 +43,18 @@ public class ErrorHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(DefaultErrorResponse.builder().message(ex.getMessage()).build());
     }
+
+    @ExceptionHandler(DuplicateVoteException.class)
+    public ResponseEntity<DefaultErrorResponse> duplicateVoteHandler(DuplicateVoteException ex){
+        log.warn("Duplicate vote attempt: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(DefaultErrorResponse.builder().message(ex.getMessage()).build());
+    }
+
+    @ExceptionHandler(AssociatePermissionVoteException.class)
+    public ResponseEntity<DefaultErrorResponse> associateNotPermissionVoteHandler(AssociatePermissionVoteException ex){
+        log.warn("Associate without permission to vote.");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(DefaultErrorResponse.builder().message(ex.getMessage()).build());
+    }
 }

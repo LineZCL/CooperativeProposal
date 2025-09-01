@@ -24,7 +24,7 @@ public class VotingSessionService {
     private final VotingSessionRepository votingSessionRepository;
     private final SessionProducer sessionProducer;
 
-    private final static String SESSION_NOT_FOUND = "Voting session not found!";
+    private final static String SESSION_NOT_FOUND = "Sessão de voto nao encontrada";
 
     public boolean hasVotingSessionOpened(UUID proposalId){
         final Optional<VotingSession> optSession = votingSessionRepository.findByProposalId(proposalId);
@@ -65,5 +65,13 @@ public class VotingSessionService {
             throw new NotFoundException(SESSION_NOT_FOUND);
         }
         return sessionOpt.get();
+    }
+
+    public VotingSession getSessionActiveByProposalId(UUID proposalId){
+        final var votingSessionOpt = votingSessionRepository.findByProposalIdAndStatus(proposalId, SessionStatus.OPENED);
+        if(votingSessionOpt.isEmpty()){
+            throw new NotFoundException(SESSION_NOT_FOUND);
+        }
+        return votingSessionOpt.get();
     }
 }

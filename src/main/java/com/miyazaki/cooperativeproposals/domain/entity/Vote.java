@@ -14,6 +14,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -39,6 +40,8 @@ public class Vote {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "voting_session_id", nullable = false)
     private VotingSession votingSession;
+
+    private LocalDateTime votedAt;
 
     private boolean vote;
 }

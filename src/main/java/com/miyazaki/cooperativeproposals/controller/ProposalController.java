@@ -2,10 +2,13 @@ package com.miyazaki.cooperativeproposals.controller;
 
 import com.miyazaki.cooperativeproposals.controller.dto.request.CreateProposalRequest;
 import com.miyazaki.cooperativeproposals.controller.dto.request.OpenSessionRequest;
+import com.miyazaki.cooperativeproposals.controller.dto.request.VoteRequest;
 import com.miyazaki.cooperativeproposals.controller.dto.response.PagedResponse;
 import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalSummary;
 import com.miyazaki.cooperativeproposals.controller.dto.response.SessionResponse;
+import com.miyazaki.cooperativeproposals.controller.dto.response.VoteResponse;
 import com.miyazaki.cooperativeproposals.service.ProposalService;
+import com.miyazaki.cooperativeproposals.service.VoteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -38,6 +41,7 @@ import java.util.UUID;
 public class ProposalController {
 
     private final ProposalService proposalService;
+    private final VoteService voteService;
 
     @Operation(summary = "Create a new proposal")
     @ApiResponses({
@@ -101,5 +105,30 @@ public class ProposalController {
         
         log.info("Retrieved proposals for page {}", page);
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Cast a vote on a proposal")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Vote successfully cast",
+                    content = @Content(schema = @Schema(implementation = VoteResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Proposal not found or no active voting session"),
+            @ApiResponse(responseCode = "409", description = "Associate has already voted or session is not active"),
+            @ApiResponse(responseCode = "400", description = "Invalid request parameters")
+    })
+    @PostMapping("/{proposalId}/vote")
+    public ResponseEntity<VoteResponse> castVote(
+            @Parameter(description = "ID of the proposal to vote on", example = "123e4567-e89b-12d3-a456-426614174000")
+            @PathVariable UUID proposalId,
+            @Valid @RequestBody VoteRequest voteRequest) {
+        
+        log.info("Processing vote for proposal: {}, associate: {}, vote: {}", 
+                proposalId, voteRequest.associateId(), voteRequest.vote());
+        
+        final VoteResponse response = voteService.castVote(proposalId, voteRequest);
+        
+        log.info("Vote successfully processed - ID: {}, Proposal: {}, Associate: {}", 
+                response.getVoteId(), proposalId, voteRequest.associateId());
+        
+        return ResponseEntity.status(201).body(response);
     }
 }

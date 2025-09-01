@@ -41,6 +41,8 @@ class VotingSessionServiceTest {
     @InjectMocks
     private VotingSessionService votingSessionService;
 
+    private static final String SESSION_NOT_FOUND_ERROR_MSG = "Sessão de voto nao encontrada";
+
     @Test
     void hasVotingSessionOpened_ShouldReturnTrue_WhenSessionExistsAndIsOpened() {
         final UUID proposalId = UUID.randomUUID();
@@ -230,16 +232,38 @@ class VotingSessionServiceTest {
             votingSessionService.closeSession(message);
         });
 
-        assertEquals("Voting session not found!", exception.getMessage());
+        assertEquals(SESSION_NOT_FOUND_ERROR_MSG, exception.getMessage());
     }
 
     @Test
-    void closeSession_ShouldThrowNotFoundException_WhenSessionMessageIsNull(){
+    void getSessionActiveByProposalId_ShouldReturnSessionActive_WhenSessionIsFound(){
+        final var proposalId = UUID.randomUUID();
+        final VotingSession session = VotingSession.builder()
+                .id(UUID.randomUUID())
+                .status(SessionStatus.OPENED)
+                .build();
+
+        when(votingSessionRepository
+                .findByProposalIdAndStatus(proposalId, SessionStatus.OPENED))
+                .thenReturn(Optional.of(session));
+
+        final var response = votingSessionService.getSessionActiveByProposalId(proposalId);
+        assertNotNull(response);
+        assertEquals(session.getId(), response.getId());
+        assertEquals(SessionStatus.OPENED, response.getStatus());
+    }
+
+    @Test
+    void getSessionActiveByProposalId_ShouldThrowNotFoundException_WhenSessionIsNotFound(){
+        final var proposalId = UUID.randomUUID();
+        when(votingSessionRepository
+                .findByProposalIdAndStatus(proposalId, SessionStatus.OPENED))
+                .thenReturn(Optional.empty());
 
         final NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            votingSessionService.closeSession(null);
+            votingSessionService.getSessionActiveByProposalId(proposalId);
         });
 
-        assertEquals("Voting session not found!", exception.getMessage());
+        assertEquals(SESSION_NOT_FOUND_ERROR_MSG, exception.getMessage());
     }
 }

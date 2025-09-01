@@ -111,5 +111,53 @@ class ErrorHandlerTest {
         assertNull(response.getBody().getDetails());
     }
 
+    @Test
+    void duplicateVoteHandler_ShouldReturnConflict_WhenDuplicateVoteExceptionThrown() {
+        final String errorMessage = "Associate has already voted on proposal";
+        final DuplicateVoteException duplicateVoteException = new DuplicateVoteException(errorMessage);
+
+        final ResponseEntity<DefaultErrorResponse> response = errorHandler.duplicateVoteHandler(duplicateVoteException);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(errorMessage, response.getBody().getMessage());
+        assertNull(response.getBody().getDetails());
+    }
+
+    @Test
+    void duplicateVoteHandler_ShouldReturnConflictWithNullMessage_WhenDuplicateVoteExceptionHasNullMessage() {
+        final SessionOpenedException sessionOpenedException = new SessionOpenedException(null);
+        final ResponseEntity<DefaultErrorResponse> response = errorHandler.sessionOpenedHandler(sessionOpenedException);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertNull(response.getBody().getMessage());
+        assertNull(response.getBody().getDetails());
+    }
+
+    @Test
+    void associateNotPermissionVoteHandler_ShouldReturnForbidden_WhenAssociateNotPermissionVoteHandler() {
+        final String errorMessage = "Associate has not permission to vote";
+        final AssociatePermissionVoteException associatePermissionVoteException = new AssociatePermissionVoteException(errorMessage);
+
+        final ResponseEntity<DefaultErrorResponse> response = errorHandler.associateNotPermissionVoteHandler(associatePermissionVoteException);
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(errorMessage, response.getBody().getMessage());
+        assertNull(response.getBody().getDetails());
+    }
+
+    @Test
+    void associateNotPermissionVoteHandler_ShouldReturnConflictWithNullMessage_WhenAssociateNotPermissionVoteHandler() {
+        final AssociatePermissionVoteException associatePermissionVoteException = new AssociatePermissionVoteException(null);
+        final ResponseEntity<DefaultErrorResponse> response = errorHandler.associateNotPermissionVoteHandler(associatePermissionVoteException);
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertNull(response.getBody().getMessage());
+        assertNull(response.getBody().getDetails());
+    }
+
 
 }

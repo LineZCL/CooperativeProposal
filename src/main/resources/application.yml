@@ -28,4 +28,16 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [trace=%X{requestTraceId:-N/A}] %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [trace=%X{requestTraceId:-N/A}] %logger{36} - %msg%n"
 
+app:
+  cpf-validation-enabled: ${CPF_VALIDATION_ENABLED:true}
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 10000
+  cpf-validation:
+    url: ${CPF_VALIDATION_URL:https://user-info.herokuapp.com}
+
 
