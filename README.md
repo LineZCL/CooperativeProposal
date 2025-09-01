@@ -1,4 +1,4 @@
-# Sistema de 
+# Sistema de Votação de Pauta para Cooperativas
 
 ![Java](https://img.shields.io/badge/Java-21-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.5-brightgreen)
