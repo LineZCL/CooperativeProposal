@@ -12,9 +12,9 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class SessionProducer {
+public final class SessionProducer {
     private final RabbitTemplate rabbitTemplate;
-    public void schedulerSessionClosure(UUID sessionId, long delayMs) {
+    public void schedulerSessionClosure(final UUID sessionId, final long delayMs) {
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.EXCHANGE_DELAYED,
                 RabbitMQConfig.ROUTE_KEY_CLOSE,

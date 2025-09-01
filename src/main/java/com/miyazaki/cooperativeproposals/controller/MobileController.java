@@ -20,7 +20,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
@@ -29,7 +33,7 @@ import java.util.UUID;
 @Slf4j
 @RequestMapping("/mobile")
 @Tag(name = "Mobile", description = "Mobile app specific endpoints with custom JSON format")
-public class MobileController {
+public final class MobileController {
     
     private final MobileScreenService mobileScreenService;
     private final ProposalService proposalService;
@@ -42,9 +46,9 @@ public class MobileController {
     @GetMapping("/proposals")
     public ResponseEntity<MobileSelectionScreen> getProposalsList(
             @Parameter(description = "Page number", example = "0")
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "0") final int page,
             @Parameter(description = "Page size", example = "20") 
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "20") final int size) {
         
         log.info("Getting proposals list for mobile - page: {}, size: {}", page, size);
         
@@ -62,15 +66,14 @@ public class MobileController {
     @GetMapping("/proposal/{proposalId}")
     public ResponseEntity<MobileScreenResponse> getProposalDetails(
             @Parameter(description = "Proposal ID") 
-            @PathVariable UUID proposalId) {
+            @PathVariable final UUID proposalId) {
         
         log.info("Getting proposal details for mobile: {}", proposalId);
         
         Proposal proposal = proposalService.getProposal(proposalId);
         
         if (votingSessionService.hasVotingSessionOpened(proposalId)) {
-            VotingSession session = votingSessionService.getSessionActiveByProposalId(proposalId);
-            MobileSelectionScreen screen = mobileScreenService.createVotingOptions(proposal, session);
+            MobileSelectionScreen screen = mobileScreenService.createVotingOptions(proposal);
             return ResponseEntity.ok(screen);
         } else {
             throw new NotFoundException("No active voting session for this proposal");
@@ -85,9 +88,9 @@ public class MobileController {
     @GetMapping("/vote-form/{proposalId}/{voteChoice}")
     public ResponseEntity<MobileFormScreen> getVoteForm(
             @Parameter(description = "Proposal ID") 
-            @PathVariable UUID proposalId,
+            @PathVariable final UUID proposalId,
             @Parameter(description = "Vote choice") 
-            @PathVariable Boolean voteChoice) {
+            @PathVariable final Boolean voteChoice) {
         
         log.info("Getting vote form for proposal: {}, choice: {}", proposalId, voteChoice);
         

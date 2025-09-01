@@ -13,18 +13,33 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
+import jakarta.annotation.PreDestroy;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class SessionConsumer {
+public final class SessionConsumer {
     private final VotingSessionService votingSessionService;
 
+    /**
+     * Cleanup method called during application shutdown.
+     * Ensures proper resource cleanup for the RabbitMQ consumer.
+     */
+    @PreDestroy
+    public void cleanup() {
+        log.info("SessionConsumer is shutting down...");
+        // Clear MDC to avoid memory leaks
+        MDC.clear();
+        log.info("SessionConsumer shutdown completed");
+    }
+
     @RabbitListener(queues = RabbitMQConfig.QUEUE_CLOSE, containerFactory = "listenerFactory")
-    public void onMessage(SessionMessage payload,
+    public void onMessage(final SessionMessage payload,
                           @Header(name = RequestTraceFilter.TRACE_KEY, required = false) String traceId,
-                          @Header(name = "x-death", required = false) Object xDeath) {
-        if (traceId == null || traceId.isBlank()) traceId = "amqp-" + UUID.randomUUID();
+                          @Header(name = "x-death", required = false) final Object xDeath) {
+        if (traceId == null || traceId.isBlank()) {
+            traceId = "amqp-" + UUID.randomUUID();
+        }
         MDC.put(RequestTraceFilter.TRACE_KEY, traceId);
         
         try {

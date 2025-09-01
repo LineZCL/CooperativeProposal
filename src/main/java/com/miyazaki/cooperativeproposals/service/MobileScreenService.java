@@ -1,6 +1,10 @@
 package com.miyazaki.cooperativeproposals.service;
 
-import com.miyazaki.cooperativeproposals.controller.dto.response.mobile.*;
+import com.miyazaki.cooperativeproposals.controller.dto.response.mobile.ActionButton;
+import com.miyazaki.cooperativeproposals.controller.dto.response.mobile.FormField;
+import com.miyazaki.cooperativeproposals.controller.dto.response.mobile.MobileFormScreen;
+import com.miyazaki.cooperativeproposals.controller.dto.response.mobile.MobileSelectionScreen;
+import com.miyazaki.cooperativeproposals.controller.dto.response.mobile.SelectionOption;
 import com.miyazaki.cooperativeproposals.domain.entity.Proposal;
 import com.miyazaki.cooperativeproposals.domain.entity.VotingSession;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +27,7 @@ public class MobileScreenService {
     @Value("${app.base-url:http://localhost:8080}")
     private String baseUrl;
     
-    public MobileFormScreen createVotingForm(Proposal proposal, VotingSession session) {
+    public MobileFormScreen createVotingForm(final Proposal proposal, final VotingSession session) {
         log.info("Creating voting form for proposal: {}", proposal.getId());
         
         return MobileFormScreen.builder()
@@ -70,7 +74,7 @@ public class MobileScreenService {
                 .build();
     }
     
-    public MobileSelectionScreen createProposalList(List<Proposal> proposals) {
+    public MobileSelectionScreen createProposalList(final List<Proposal> proposals) {
         log.info("Creating proposal selection screen with {} proposals", proposals.size());
         
         final List<SelectionOption> options = proposals.stream()
@@ -131,7 +135,7 @@ public class MobileScreenService {
                 .build();
     }
     
-    public MobileSelectionScreen createVotingOptions(Proposal proposal, VotingSession session) {
+    public MobileSelectionScreen createVotingOptions(final Proposal proposal) {
         log.info("Creating voting options for proposal: {}", proposal.getId());
         
         return MobileSelectionScreen.builder()

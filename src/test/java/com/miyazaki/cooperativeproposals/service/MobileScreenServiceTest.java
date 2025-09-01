@@ -210,7 +210,7 @@ class MobileScreenServiceTest {
 
     @Test
     void createVotingOptions_ShouldReturnValidMobileSelectionScreen() {
-        final MobileSelectionScreen result = mobileScreenService.createVotingOptions(mockProposal, mockSession);
+        final MobileSelectionScreen result = mobileScreenService.createVotingOptions(mockProposal);
 
         assertNotNull(result);
         assertEquals("SELECAO", result.getTipo());
@@ -289,7 +289,7 @@ class MobileScreenServiceTest {
         ReflectionTestUtils.setField(mobileScreenService, "contextPath", "/custom");
         ReflectionTestUtils.setField(mobileScreenService, "baseUrl", "https://api.example.com");
 
-        final MobileSelectionScreen result = mobileScreenService.createVotingOptions(mockProposal, mockSession);
+        final MobileSelectionScreen result = mobileScreenService.createVotingOptions(mockProposal);
 
         final List<SelectionOption> options = result.getOpcoes();
         assertEquals("https://api.example.com/custom/mobile/vote-form/" + proposalId + "/true", options.get(0).getUrl());

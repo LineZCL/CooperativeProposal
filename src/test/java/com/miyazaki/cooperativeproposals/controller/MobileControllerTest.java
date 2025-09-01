@@ -120,8 +120,7 @@ class MobileControllerTest {
 
         when(proposalService.getProposal(proposalId)).thenReturn(mockProposal);
         when(votingSessionService.hasVotingSessionOpened(proposalId)).thenReturn(true);
-        when(votingSessionService.getSessionActiveByProposalId(proposalId)).thenReturn(mockSession);
-        when(mobileScreenService.createVotingOptions(mockProposal, mockSession)).thenReturn(expectedScreen);
+        when(mobileScreenService.createVotingOptions(mockProposal)).thenReturn(expectedScreen);
 
         final ResponseEntity<MobileScreenResponse> response = mobileController.getProposalDetails(proposalId);
 
@@ -131,8 +130,7 @@ class MobileControllerTest {
         
         verify(proposalService, times(1)).getProposal(proposalId);
         verify(votingSessionService, times(1)).hasVotingSessionOpened(proposalId);
-        verify(votingSessionService, times(1)).getSessionActiveByProposalId(proposalId);
-        verify(mobileScreenService, times(1)).createVotingOptions(mockProposal, mockSession);
+        verify(mobileScreenService, times(1)).createVotingOptions(mockProposal);
     }
 
     @Test
@@ -149,7 +147,7 @@ class MobileControllerTest {
         verify(proposalService, times(1)).getProposal(proposalId);
         verify(votingSessionService, times(1)).hasVotingSessionOpened(proposalId);
         verify(votingSessionService, never()).getSessionActiveByProposalId(any());
-        verify(mobileScreenService, never()).createVotingOptions(any(), any());
+        verify(mobileScreenService, never()).createVotingOptions(any());
     }
 
     @Test

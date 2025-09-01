@@ -34,11 +34,11 @@ public class VoteService {
     private final AssociateValidationService associateValidationService;
     
     @Transactional
-    public VoteResponse castVote(UUID proposalId, VoteRequest voteRequest) {
+    public VoteResponse castVote(final UUID proposalId, final VoteRequest voteRequest) {
         log.info("Processing vote for proposal: {}, associate: {}, vote: {}", 
                 proposalId, voteRequest.associateId(), voteRequest.vote());
 
-        if(!associateValidationService.isValidCpf(voteRequest.associateCpf())){
+        if (!associateValidationService.isValidCpf(voteRequest.associateCpf())) {
             throw new AssociatePermissionVoteException("Associado sem permissão para voltar");
         }
 
@@ -57,7 +57,7 @@ public class VoteService {
         return voteMapper.toVoteResponse(vote);
     }
     
-    private VotingSession getActiveVotingSession(UUID proposalId) {
+    private VotingSession getActiveVotingSession(final UUID proposalId) {
         
         if (!votingSessionService.hasVotingSessionOpened(proposalId)) {
             log.warn("No active voting session found for proposal: {}", proposalId);
@@ -67,14 +67,16 @@ public class VoteService {
         return votingSessionService.getSessionActiveByProposalId(proposalId);
     }
     
-    private void validateNoDuplicateVote(UUID proposalId, UUID associateId) {
+    private void validateNoDuplicateVote(final UUID proposalId, final UUID associateId) {
         if (voteRepository.existsByProposalIdAndAssociateId(proposalId, associateId)) {
             log.warn("Associate {} has already voted on proposal {}", associateId, proposalId);
             throw new DuplicateVoteException("Associate has already voted on this proposal");
         }
     }
     
-    private Vote createVote(Proposal proposal, VotingSession votingSession, VoteRequest voteRequest) {
+    private Vote createVote(final Proposal proposal,
+                            final VotingSession votingSession,
+                            final VoteRequest voteRequest) {
         return Vote.builder()
                 .proposal(proposal)
                 .votingSession(votingSession)
@@ -84,7 +86,7 @@ public class VoteService {
                 .build();
     }
 
-    public ProposalResultResponse getVoteResult(UUID proposalId){
+    public ProposalResultResponse getVoteResult(final UUID proposalId) {
         final var result = voteRepository.countVoteResults(proposalId);
 
         return ProposalResultResponse.builder()
@@ -94,10 +96,11 @@ public class VoteService {
                 .build();
     }
     
-    private Proposal getProposal(UUID proposalId) throws NotFoundException {
+    private Proposal getProposal(final UUID proposalId) throws NotFoundException {
         final Optional<Proposal> proposalOptional = proposalRepository.findById(proposalId);
-        if(proposalOptional.isEmpty())
+        if (proposalOptional.isEmpty()) {
             throw new NotFoundException("Proposal not found!");
+        }
         return proposalOptional.get();
     }
 

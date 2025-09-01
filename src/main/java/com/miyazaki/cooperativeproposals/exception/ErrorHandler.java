@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 @Slf4j
-public class ErrorHandler {
+public final class ErrorHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<DefaultErrorResponse> handleValidError(MethodArgumentNotValidException ex){
+    public ResponseEntity<DefaultErrorResponse> handleValidError(final MethodArgumentNotValidException ex) {
         log.warn("Validation error occurred: {}", ex.getMessage());
         
         final String details = ex.getBindingResult().getFieldErrors().stream()
@@ -31,28 +31,29 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<DefaultErrorResponse> notFoundHandler(NotFoundException ex){
+    public ResponseEntity<DefaultErrorResponse> notFoundHandler(final NotFoundException ex) {
         log.warn("Resource not found: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(DefaultErrorResponse.builder().message(ex.getMessage()).build());
     }
 
     @ExceptionHandler(SessionOpenedException.class)
-    public ResponseEntity<DefaultErrorResponse> sessionOpenedHandler(SessionOpenedException ex){
+    public ResponseEntity<DefaultErrorResponse> sessionOpenedHandler(final SessionOpenedException ex) {
         log.warn("Session already opened: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(DefaultErrorResponse.builder().message(ex.getMessage()).build());
     }
 
     @ExceptionHandler(DuplicateVoteException.class)
-    public ResponseEntity<DefaultErrorResponse> duplicateVoteHandler(DuplicateVoteException ex){
+    public ResponseEntity<DefaultErrorResponse> duplicateVoteHandler(final DuplicateVoteException ex) {
         log.warn("Duplicate vote attempt: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(DefaultErrorResponse.builder().message(ex.getMessage()).build());
     }
 
     @ExceptionHandler(AssociatePermissionVoteException.class)
-    public ResponseEntity<DefaultErrorResponse> associateNotPermissionVoteHandler(AssociatePermissionVoteException ex){
+    public ResponseEntity<DefaultErrorResponse> associateNotPermissionVoteHandler(
+            final AssociatePermissionVoteException ex) {
         log.warn("Associate without permission to vote.");
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(DefaultErrorResponse.builder().message(ex.getMessage()).build());

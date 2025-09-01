@@ -5,10 +5,18 @@ server:
 spring:
   application:
     name: CooperativeProposals
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
   datasource:
     url: ${POSTGRES_DB:jdbc:postgresql://localhost:5432/cooperative_proposals}
     username: ${POSTGRES_USER:coop}
     password: ${POSTGRES_PASSWORD:coop}
+    hikari:
+      connection-timeout: 20000
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 300000
+      max-lifetime: 1800000
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -17,6 +25,10 @@ spring:
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USERNAME:coop-guest}
     password: ${RABBITMQ_PASSWORD:coop-guest}
+    connection-timeout: 60000
+    template:
+      receive-timeout: 10000
+      reply-timeout: 10000
 springdoc:
   swagger-ui:
     path: /docs
@@ -30,7 +42,7 @@ logging:
 
 app:
   cpf-validation-enabled: ${CPF_VALIDATION_ENABLED:true}
-  base-url: ${APP_BASE_URL:http://localhost:8080}  # Adicione esta linha
+  base-url: ${APP_BASE_URL:http://localhost:8080}  
 
 feign:
   client:

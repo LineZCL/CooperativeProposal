@@ -20,7 +20,7 @@ public class AssociateValidationService {
     @Value("${app.cpf-validation-enabled}")
     private boolean isCpfValidationEnabled;
 
-    public boolean isValidCpf(String cpf) {
+    public boolean isValidCpf(final String cpf) {
         if (!isCpfValidationEnabled) {
             log.info("CPF validation is disabled. Considering CPF {} as valid", cpf);
             return true;

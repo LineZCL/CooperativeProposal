@@ -16,12 +16,15 @@ import java.util.UUID;
 @Component
 @Order(1)
 @Slf4j
-public class RequestTraceFilter extends OncePerRequestFilter{
+public final class RequestTraceFilter extends OncePerRequestFilter {
 
     public static final String TRACE_KEY = "requestTraceId";
     public static final String TRACE_HEADER = "X-Request-Id";
     @Override
-    protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response, final FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final FilterChain filterChain) throws ServletException, IOException {
         String traceId = request.getHeader(TRACE_HEADER);
         if (traceId == null || traceId.isBlank()) {
             traceId = UUID.randomUUID().toString();

@@ -24,14 +24,15 @@ public class VotingSessionService {
     private final VotingSessionRepository votingSessionRepository;
     private final SessionProducer sessionProducer;
 
-    private final static String SESSION_NOT_FOUND = "Sessão de voto nao encontrada";
+    private static final String SESSION_NOT_FOUND = "Sessão de voto nao encontrada";
+    private static final Long MILISECONDS_SEC = 1000L;
 
-    public boolean hasVotingSessionOpened(UUID proposalId){
+    public boolean hasVotingSessionOpened(final UUID proposalId) {
         final Optional<VotingSession> optSession = votingSessionRepository.findByProposalId(proposalId);
         return optSession.isPresent();
     }
 
-    public VotingSession create(Proposal proposal, Integer duration){
+    public VotingSession create(final Proposal proposal, final Integer duration) {
         final LocalDateTime now = LocalDateTime.now();
 
         final VotingSession session = VotingSession.builder().proposal(proposal)
@@ -43,33 +44,34 @@ public class VotingSessionService {
         return votingSessionRepository.save(session);
     }
 
-    public void schedulerSessionClosure(UUID sessionId, Long duration){
-        sessionProducer.schedulerSessionClosure(sessionId, duration * 1000L);
+    public void schedulerSessionClosure(final UUID sessionId, final Long duration) {
+        sessionProducer.schedulerSessionClosure(sessionId, duration * MILISECONDS_SEC);
     }
 
     @Transactional
-    public VotingSession closeSession(final SessionMessage sessionMessage){
-        if(Objects.nonNull(sessionMessage)) {
+    public VotingSession closeSession(final SessionMessage sessionMessage) {
+        if (Objects.nonNull(sessionMessage)) {
             final var session = getSession(sessionMessage.votingSessionId());
             session.setStatus(SessionStatus.CLOSED);
             return votingSessionRepository.save(session);
-        }else{
+        } else {
             log.error("Session is null");
             throw new NotFoundException(SESSION_NOT_FOUND);
         }
     }
 
-    public VotingSession getSession(UUID votingSessionId){
+    public VotingSession getSession(final UUID votingSessionId) {
         final var sessionOpt = votingSessionRepository.findById(votingSessionId);
-        if(sessionOpt.isEmpty()){
+        if (sessionOpt.isEmpty()) {
             throw new NotFoundException(SESSION_NOT_FOUND);
         }
         return sessionOpt.get();
     }
 
-    public VotingSession getSessionActiveByProposalId(UUID proposalId){
-        final var votingSessionOpt = votingSessionRepository.findByProposalIdAndStatus(proposalId, SessionStatus.OPENED);
-        if(votingSessionOpt.isEmpty()){
+    public VotingSession getSessionActiveByProposalId(final UUID proposalId) {
+        final var votingSessionOpt = votingSessionRepository
+                .findByProposalIdAndStatus(proposalId, SessionStatus.OPENED);
+        if (votingSessionOpt.isEmpty()) {
             throw new NotFoundException(SESSION_NOT_FOUND);
         }
         return votingSessionOpt.get();

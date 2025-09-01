@@ -7,6 +7,5 @@ import jakarta.validation.constraints.PositiveOrZero;
 @Schema(name = "OpenSessionRequest")
 public record OpenSessionRequest(
         @Schema(description = "Voting Session duration (default=60)", example = "60")
-        @PositiveOrZero @Max(3600) Integer durationSeconds)
-{
+        @PositiveOrZero @Max(3600) Integer durationSeconds) {
 }

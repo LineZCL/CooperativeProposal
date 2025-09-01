@@ -1,0 +1,78 @@
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :resolveMainClassName
+
+> Task :bootRun
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.5)
+
+2025-09-01 16:48:17 [main] INFO  [trace=N/A] c.m.c.CooperativeProposalsApplication - Starting CooperativeProposalsApplication using Java 21.0.2 with PID 38264 (/Users/alinekimymiyazaki/workspace/CooperativeGuidelines/build/classes/java/main started by alinekimymiyazaki in /Users/alinekimymiyazaki/workspace/CooperativeGuidelines)
+2025-09-01 16:48:17 [main] DEBUG [trace=N/A] c.m.c.CooperativeProposalsApplication - Running with Spring Boot v3.5.5, Spring v6.2.10
+2025-09-01 16:48:17 [main] INFO  [trace=N/A] c.m.c.CooperativeProposalsApplication - No active profile set, falling back to 1 default profile: "default"
+2025-09-01 16:48:18 [main] INFO  [trace=N/A] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-09-01 16:48:18 [main] INFO  [trace=N/A] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 41 ms. Found 3 JPA repository interfaces.
+2025-09-01 16:48:18 [main] INFO  [trace=N/A] o.s.cloud.context.scope.GenericScope - BeanFactory id=1ac9da1f-29e0-3d28-a578-ec42311af849
+2025-09-01 16:48:18 [main] INFO  [trace=N/A] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2025-09-01 16:48:18 [main] INFO  [trace=N/A] o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-09-01 16:48:18 [main] INFO  [trace=N/A] o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.44]
+2025-09-01 16:48:18 [main] INFO  [trace=N/A] o.a.c.c.C.[.[localhost].[/api/v1] - Initializing Spring embedded WebApplicationContext
+2025-09-01 16:48:18 [main] INFO  [trace=N/A] o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 1023 ms
+2025-09-01 16:48:18 [main] DEBUG [trace=N/A] c.m.c.filter.RequestTraceFilter - Filter 'requestTraceFilter' configured for use
+2025-09-01 16:48:18 [main] INFO  [trace=N/A] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-09-01 16:48:19 [main] INFO  [trace=N/A] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@75839695
+2025-09-01 16:48:19 [main] INFO  [trace=N/A] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-09-01 16:48:19 [main] INFO  [trace=N/A] org.flywaydb.core.FlywayExecutor - Database: jdbc:postgresql://localhost:5432/cooperative_proposals (PostgreSQL 16.10)
+2025-09-01 16:48:19 [main] INFO  [trace=N/A] o.f.core.internal.command.DbValidate - Successfully validated 2 migrations (execution time 00:00.048s)
+2025-09-01 16:48:19 [main] INFO  [trace=N/A] o.f.core.internal.command.DbMigrate - Current version of schema "public": 2
+2025-09-01 16:48:19 [main] INFO  [trace=N/A] o.f.core.internal.command.DbMigrate - Schema "public" is up to date. No migration necessary.
+2025-09-01 16:48:19 [main] INFO  [trace=N/A] o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-09-01 16:48:19 [main] INFO  [trace=N/A] org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.26.Final
+2025-09-01 16:48:19 [main] INFO  [trace=N/A] o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-09-01 16:48:19 [main] INFO  [trace=N/A] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-09-01 16:48:19 [main] INFO  [trace=N/A] o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 16.10
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-09-01 16:48:20 [main] INFO  [trace=N/A] o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-09-01 16:48:20 [main] INFO  [trace=N/A] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-09-01 16:48:20 [main] INFO  [trace=N/A] o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-09-01 16:48:20 [main] WARN  [trace=N/A] o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-09-01 16:48:20 [main] DEBUG [trace=N/A] o.s.w.s.m.m.a.RequestMappingHandlerMapping - 15 mappings in 'requestMappingHandlerMapping'
+2025-09-01 16:48:20 [main] DEBUG [trace=N/A] o.s.w.s.h.SimpleUrlHandlerMapping - Patterns [/webjars/**, /**, /swagger-ui*/*swagger-initializer.js, /swagger-ui*/**] in 'resourceHandlerMapping'
+2025-09-01 16:48:20 [main] DEBUG [trace=N/A] o.s.w.s.m.m.a.RequestMappingHandlerAdapter - ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+2025-09-01 16:48:20 [main] DEBUG [trace=N/A] o.s.w.s.m.m.a.ExceptionHandlerExceptionResolver - ControllerAdvice beans: 2 @ExceptionHandler, 1 ResponseBodyAdvice
+2025-09-01 16:48:20 [main] INFO  [trace=N/A] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/api/v1'
+2025-09-01 16:48:20 [main] INFO  [trace=N/A] o.s.a.r.c.CachingConnectionFactory - Attempting to connect to: [localhost:5672]
+2025-09-01 16:48:21 [main] INFO  [trace=N/A] o.s.a.r.c.CachingConnectionFactory - Created new connection: rabbitConnectionFactory#65130cf2:0/SimpleConnection@3f1485c3 [delegate=amqp://coop-guest@127.0.0.1:5672/, localPort=62478]
+2025-09-01 16:48:21 [main] INFO  [trace=N/A] c.m.c.CooperativeProposalsApplication - Started CooperativeProposalsApplication in 3.692 seconds (process running for 3.992)
+2025-09-01 16:48:26 [http-nio-8080-exec-1] INFO  [trace=N/A] o.a.c.c.C.[.[localhost].[/api/v1] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-09-01 16:48:26 [http-nio-8080-exec-1] INFO  [trace=N/A] o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-09-01 16:48:26 [http-nio-8080-exec-1] DEBUG [trace=N/A] o.s.web.servlet.DispatcherServlet - Detected StandardServletMultipartResolver
+2025-09-01 16:48:26 [http-nio-8080-exec-1] DEBUG [trace=N/A] o.s.web.servlet.DispatcherServlet - Detected AcceptHeaderLocaleResolver
+2025-09-01 16:48:26 [http-nio-8080-exec-1] DEBUG [trace=N/A] o.s.web.servlet.DispatcherServlet - Detected FixedThemeResolver
+2025-09-01 16:48:26 [http-nio-8080-exec-1] DEBUG [trace=N/A] o.s.web.servlet.DispatcherServlet - Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@676f70dc
+2025-09-01 16:48:26 [http-nio-8080-exec-1] DEBUG [trace=N/A] o.s.web.servlet.DispatcherServlet - Detected org.springframework.web.servlet.support.SessionFlashMapManager@7a7698f4
+2025-09-01 16:48:26 [http-nio-8080-exec-1] DEBUG [trace=N/A] o.s.web.servlet.DispatcherServlet - enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
+2025-09-01 16:48:26 [http-nio-8080-exec-1] INFO  [trace=N/A] o.s.web.servlet.DispatcherServlet - Completed initialization in 5 ms
+2025-09-01 16:48:26 [http-nio-8080-exec-1] DEBUG [trace=825dd9ae-dc20-42b7-8d21-9cb6727454b9] o.s.web.servlet.DispatcherServlet - GET "/api/v1/proposals", parameters={}
+2025-09-01 16:48:26 [http-nio-8080-exec-1] DEBUG [trace=825dd9ae-dc20-42b7-8d21-9cb6727454b9] o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-01 16:48:26 [http-nio-8080-exec-1] DEBUG [trace=825dd9ae-dc20-42b7-8d21-9cb6727454b9] o.s.w.s.r.ResourceHttpRequestHandler - Resource not found
+2025-09-01 16:48:26 [http-nio-8080-exec-1] DEBUG [trace=825dd9ae-dc20-42b7-8d21-9cb6727454b9] o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource proposals.]
+2025-09-01 16:48:26 [http-nio-8080-exec-1] DEBUG [trace=825dd9ae-dc20-42b7-8d21-9cb6727454b9] o.s.web.servlet.DispatcherServlet - Completed 404 NOT_FOUND
+2025-09-01 16:48:26 [http-nio-8080-exec-1] DEBUG [trace=N/A] o.s.web.servlet.DispatcherServlet - "ERROR" dispatch for GET "/api/v1/error", parameters={}
+2025-09-01 16:48:26 [http-nio-8080-exec-1] DEBUG [trace=N/A] o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController#error(HttpServletRequest)
+2025-09-01 16:48:26 [http-nio-8080-exec-1] DEBUG [trace=N/A] o.s.w.s.m.m.a.HttpEntityMethodProcessor - Using 'application/json', given [*/*] and supported [application/json, application/*+json, application/yaml]
+2025-09-01 16:48:26 [http-nio-8080-exec-1] DEBUG [trace=N/A] o.s.w.s.m.m.a.HttpEntityMethodProcessor - Writing [{timestamp=Mon Sep 01 16:48:26 BRT 2025, status=404, error=Not Found, path=/api/v1/proposals}]
+2025-09-01 16:48:26 [http-nio-8080-exec-1] DEBUG [trace=N/A] o.s.web.servlet.DispatcherServlet - Exiting from "ERROR" dispatch, status 404

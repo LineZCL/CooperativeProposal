@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,7 +40,7 @@ import java.util.UUID;
 @Slf4j
 @RequestMapping("/proposal")
 @Tag(name = "Proposal")
-public class ProposalController {
+public final class ProposalController {
 
     private final ProposalService proposalService;
     private final VoteService voteService;
@@ -49,7 +50,7 @@ public class ProposalController {
             @ApiResponse(responseCode = "201", description = "Proposal criado."),
     })
     @PostMapping
-    public ResponseEntity<Void> create(@Valid @RequestBody final CreateProposalRequest createProposalRequest){
+    public ResponseEntity<Void> create(@Valid @RequestBody final CreateProposalRequest createProposalRequest)   {
         log.info("Create a proposal. Title: {}", createProposalRequest.title());
         proposalService.create(createProposalRequest);
         log.info("Proposal has been created. Title: {}", createProposalRequest.title());
@@ -65,8 +66,8 @@ public class ProposalController {
     })
     @PostMapping("/{proposalId}/open")
     public ResponseEntity<?> openSession(
-            @PathVariable UUID proposalId,
-            @Valid @RequestBody(required = false) OpenSessionRequest req) {
+            @PathVariable final UUID proposalId,
+            @Valid @RequestBody(required = false) final OpenSessionRequest req) {
             log.info("Opening voting session for proposal: {}, duration: {}", 
                     proposalId, req != null ? req.durationSeconds() : "default");
             SessionResponse resp = proposalService.openVotingSession(proposalId, req);
@@ -83,16 +84,16 @@ public class ProposalController {
     @GetMapping
     public ResponseEntity<PagedResponse<ProposalSummary>> getAllProposals(
             @Parameter(description = "Page number (0-based)", example = "0")
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "0") final int page,
             
             @Parameter(description = "Number of items per page", example = "10")
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "10") final int size,
             
             @Parameter(description = "Sort field", example = "title")
-            @RequestParam(defaultValue = "title") String sortBy,
+            @RequestParam(defaultValue = "title") final String sortBy,
             
             @Parameter(description = "Sort direction (asc or desc)", example = "asc")
-            @RequestParam(defaultValue = "asc") String sortDirection) {
+            @RequestParam(defaultValue = "asc") final String sortDirection) {
         
         log.info("Retrieving proposals - page: {}, size: {}, sortBy: {}, sortDirection: {}", 
                 page, size, sortBy, sortDirection);
@@ -120,8 +121,8 @@ public class ProposalController {
     @PostMapping("/{proposalId}/vote")
     public ResponseEntity<VoteResponse> castVote(
             @Parameter(description = "ID of the proposal to vote on", example = "123e4567-e89b-12d3-a456-426614174000")
-            @PathVariable UUID proposalId,
-            @Valid @RequestBody VoteRequest voteRequest) {
+            @PathVariable final UUID proposalId,
+            @Valid @RequestBody final VoteRequest voteRequest) {
         
         log.info("Processing vote for proposal: {}, associate: {}, vote: {}", 
                 proposalId, voteRequest.associateId(), voteRequest.vote());
@@ -131,7 +132,7 @@ public class ProposalController {
         log.info("Vote successfully processed - ID: {}, Proposal: {}, Associate: {}", 
                 response.getVoteId(), proposalId, voteRequest.associateId());
         
-        return ResponseEntity.status(201).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(summary = "Get proposal details with result")
@@ -143,7 +144,7 @@ public class ProposalController {
     @GetMapping("/{proposalId}")
     public ResponseEntity<ProposalDetailsResponse> getProposalDetail(
             @Parameter(description = "ID of the proposal to vote on", example = "123e4567-e89b-12d3-a456-426614174000")
-            @PathVariable UUID proposalId){
+            @PathVariable final UUID proposalId) {
         log.info("Get proposal details for ID: {}", proposalId);
         final var proposalDetails = proposalService.getProposalDetail(proposalId);
         return ResponseEntity.ok(proposalDetails);

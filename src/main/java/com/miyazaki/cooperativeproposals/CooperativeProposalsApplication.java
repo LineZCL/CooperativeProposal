@@ -6,8 +6,12 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableFeignClients
-public class CooperativeProposalsApplication {
-	public static void main(String[] args) {
-		SpringApplication.run(CooperativeProposalsApplication.class, args);
-	}
+public final class CooperativeProposalsApplication {
+
+    private CooperativeProposalsApplication() {
+    }
+
+    public static void main(final String[] args) {
+        SpringApplication.run(CooperativeProposalsApplication.class, args);
+    }
 }

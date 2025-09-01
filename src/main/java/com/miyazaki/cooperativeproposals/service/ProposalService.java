@@ -4,7 +4,6 @@ import com.miyazaki.cooperativeproposals.controller.dto.request.CreateProposalRe
 import com.miyazaki.cooperativeproposals.controller.dto.request.OpenSessionRequest;
 import com.miyazaki.cooperativeproposals.controller.dto.response.PagedResponse;
 import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalDetailsResponse;
-import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalResultResponse;
 import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalStatusEnum;
 import com.miyazaki.cooperativeproposals.controller.dto.response.ProposalSummary;
 import com.miyazaki.cooperativeproposals.controller.dto.response.SessionResponse;
@@ -14,8 +13,6 @@ import com.miyazaki.cooperativeproposals.exception.SessionOpenedException;
 import com.miyazaki.cooperativeproposals.domain.mapper.ProposalMapper;
 import com.miyazaki.cooperativeproposals.domain.mapper.VotingSessionMapper;
 import com.miyazaki.cooperativeproposals.domain.repository.ProposalRepository;
-import com.miyazaki.cooperativeproposals.domain.repository.VoteRepository;
-import com.miyazaki.cooperativeproposals.domain.repository.projection.VoteSummaryProjection;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,24 +37,28 @@ public class ProposalService {
 
 
     @Transactional
-    public void create(CreateProposalRequest proposalRequest){
+    public void create(final CreateProposalRequest proposalRequest) {
         final var proposal = proposalMapper.toEntity(proposalRequest);
         proposalRepository.save(proposal);
     }
 
     @Transactional
-    public SessionResponse openVotingSession(UUID proposalId, OpenSessionRequest request) throws NotFoundException, SessionOpenedException {
+    public SessionResponse openVotingSession(
+            final UUID proposalId,
+            final OpenSessionRequest request) throws NotFoundException, SessionOpenedException {
         log.info("Starting voting session opening process for proposal: {}", proposalId);
         
         final var proposal = getProposal(proposalId);
         log.info("Proposal found: {}", proposal.getTitle());
         
-        if(votingSessionService.hasVotingSessionOpened(proposalId)){
+        if (votingSessionService.hasVotingSessionOpened(proposalId)) {
             log.warn("Attempted to open session for proposal {} but session already exists", proposalId);
             throw new SessionOpenedException("Session voting to proposal already opened");
         }
 
-        final Integer duration = Objects.nonNull(request) && Objects.nonNull(request.durationSeconds()) ? request.durationSeconds() : DEFAULT_DURATION;
+        final Integer duration = Objects.nonNull(request)
+                && Objects.nonNull(request.durationSeconds())
+                ? request.durationSeconds() : DEFAULT_DURATION;
 
         final var session = votingSessionService.create(proposal, duration);
         log.info("Session created with ID: {} for proposal: {}", session.getId(), proposalId);
@@ -68,15 +69,18 @@ public class ProposalService {
         return votingSessionMapper.toSessionResponse(session);
     }
 
-    public Proposal getProposal(UUID proposalId) throws NotFoundException {
+    public Proposal getProposal(final UUID proposalId) throws NotFoundException {
         final Optional<Proposal> proposalOptional = proposalRepository.findById(proposalId);
-        if(proposalOptional.isEmpty())
+        if (proposalOptional.isEmpty()) {
             throw new NotFoundException("Proposal not found!");
+        }
         return proposalOptional.get();
     }
 
-    public PagedResponse<ProposalSummary> getAllProposals(Pageable pageable) {
-        log.info("Retrieving proposals with pagination - page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+    public PagedResponse<ProposalSummary> getAllProposals(final Pageable pageable) {
+        log.info("Retrieving proposals with pagination - page: {}, size: {}",
+                pageable.getPageNumber(),
+                pageable.getPageSize());
         
         final Page<Proposal> proposalPage = proposalRepository.findAll(pageable);
         
@@ -95,7 +99,7 @@ public class ProposalService {
                 .build();
     }
 
-    private ProposalSummary mapToProposalSummary(Proposal proposal) {
+    private ProposalSummary mapToProposalSummary(final Proposal proposal) {
         final ProposalStatusEnum status = determineProposalStatus(proposal);
         
         return ProposalSummary.builder()
@@ -106,7 +110,7 @@ public class ProposalService {
                 .build();
     }
 
-    private ProposalStatusEnum determineProposalStatus(Proposal proposal) {
+    private ProposalStatusEnum determineProposalStatus(final Proposal proposal) {
         if (proposal.getVotingSession() == null) {
             return ProposalStatusEnum.WAITING;
         }
@@ -117,20 +121,20 @@ public class ProposalService {
         };
     }
 
-    public ProposalDetailsResponse getProposalDetail(final UUID proposalId){
+    public ProposalDetailsResponse getProposalDetail(final UUID proposalId) {
         final var proposal = getProposal(proposalId);
         final var proposalStatus = determineProposalStatus(proposal);
 
         final var details = proposalMapper.toProposalDetailsResponse(proposal, proposalStatus);
 
-        if(proposalStatus.equals(ProposalStatusEnum.CLOSED)){
+        if (proposalStatus.equals(ProposalStatusEnum.CLOSED)) {
             final var result = voteService.getVoteResult(proposalId);
             details.setResult(result);
         }
         return details;
     }
 
-    public Page<Proposal> getAllProposalsPage(Pageable pageable) {
+    public Page<Proposal> getAllProposalsPage(final Pageable pageable) {
         log.info("Retrieving proposals page: {}", pageable);
         return proposalRepository.findAll(pageable);
     }
