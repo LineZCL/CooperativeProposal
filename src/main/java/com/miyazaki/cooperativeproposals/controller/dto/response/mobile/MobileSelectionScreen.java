@@ -26,8 +26,4 @@ public class MobileSelectionScreen extends MobileScreenResponse {
     @Schema(description = "List of selection options")
     private List<SelectionOption> opcoes;
     
-    public MobileSelectionScreen() {
-        super();
-        this.tipo = "SELECAO";
-    }
 }

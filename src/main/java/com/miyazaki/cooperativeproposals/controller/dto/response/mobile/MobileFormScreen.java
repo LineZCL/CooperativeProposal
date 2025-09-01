@@ -29,9 +29,4 @@ public class MobileFormScreen extends MobileScreenResponse {
     @Schema(description = "Action buttons")
     private List<ActionButton> botoes;
 
-    public MobileFormScreen() {
-        super();
-        this.tipo = "FORMULARIO";
-    }
 }
-    // End of class

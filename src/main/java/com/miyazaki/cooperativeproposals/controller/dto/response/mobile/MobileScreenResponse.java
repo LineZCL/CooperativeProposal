@@ -12,9 +12,6 @@ import lombok.experimental.SuperBuilder;
 @Schema(description = "Base class for all mobile screen responses")
 public abstract class MobileScreenResponse {
     
-   protected MobileScreenResponse() {
-    }
-
    @Schema(description = "Type of the screen", allowableValues = {"FORMULARIO", "SELECAO"})
    protected String tipo;
 }

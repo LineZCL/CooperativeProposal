@@ -30,6 +30,7 @@ logging:
 
 app:
   cpf-validation-enabled: ${CPF_VALIDATION_ENABLED:true}
+  base-url: ${APP_BASE_URL:http://localhost:8080}  # Adicione esta linha
 
 feign:
   client:
