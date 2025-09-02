@@ -249,4 +249,3 @@ Os relatórios são gerados em:
 
 ---
 
-💡 **Dica**: Para mais informações sobre linting e qualidade de código, consulte o arquivo `LINTING.md`.
